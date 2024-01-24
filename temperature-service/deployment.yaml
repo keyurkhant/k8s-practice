@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temperature-service
+  labels:
+    app: temperature-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: temperature-service
+  template:
+    metadata:
+      name: temperature-service
+      labels:
+        app: temperature-service
+    spec:
+      containers:
+        - name: temperature-service
+          image: us-east1-docker.pkg.dev/cloud-assignment-k8s/application2/temperature-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 6001
+          volumeMounts:
+            - name: myvolume
+              mountPath: /Keyur_PV_dir
+      volumes:
+        - name: myvolume
+          persistentVolumeClaim:
+            claimName: keyur-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temperature-service
+spec:
+  selector:
+    app: temperature-service
+  ports:
+    - protocol: TCP
+      port: 6001
+      targetPort: 6001

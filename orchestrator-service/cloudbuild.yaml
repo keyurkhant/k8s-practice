@@ -1,0 +1,23 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-east1-docker.pkg.dev/cloud-assignment-k8s/application/orchestrator-service:$COMMIT_SHA', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-east1-docker.pkg.dev/cloud-assignment-k8s/application/orchestrator-service:$COMMIT_SHA']
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud container clusters get-credentials cloud-assignment-k8s-gke --region us-central1-a
+- name: 'gcr.io/cloud-builders/gke-deploy'
+  id: Deployment
+  args:
+    [
+      'run',
+      '--filename=deployment.yaml',
+      '--image=us-east1-docker.pkg.dev/cloud-assignment-k8s/application/orchestrator-service:$COMMIT_SHA',
+      '--location=us-central1-a',
+      '--cluster=cloud-assignment-k8s-gke',
+    ]
+images:
+- 'us-east1-docker.pkg.dev/cloud-assignment-k8s/application/orchestrator-service'
